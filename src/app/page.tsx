@@ -4,42 +4,38 @@ import PostCard from "./components/PostCard";
 import { Post } from "./interfaces";
 import Link from "next/link";
 
-async function getPosts(): Promise<Post[]> { //  <- ١. تحديد نوع الإرجاع
+async function getPosts(): Promise<Post[]> {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
 
-  // إذا لم يكن الرابط موجودًا، لا تحاول الاتصال
   if (!strapiUrl) {
     console.error("STRAPI_API_URL is not defined.");
     return [];
   }
 
   try {
-    const res = await fetch(`${strapiUrl}/api/posts?populate=*`, {
-      next: { revalidate: 60 } //  <- ٢. استخدام الكاش بطريقة صحيحة
+    //  👇 هذا هو التعديل الحاسم 👇
+    const res = await fetch(`${strapiUrl}/api/posts?populate=*`, { 
+      next: { revalidate: 10 } 
     });
 
     if (!res.ok) {
-      console.error("Failed to fetch posts, status:", res.status);
+      console.error("Build-time fetch failed, status:", res.status);
       return [];
     }
 
     const responseJson = await res.json();
     
-    // ٣. تحقق آمن جدًا من البيانات
     if (responseJson && Array.isArray(responseJson.data)) {
       return responseJson.data;
     }
 
-    // إذا لم تكن البيانات بالشكل المتوقع، اطبعها للتشخيص
-    console.warn("Received unexpected data structure from Strapi:", responseJson);
     return [];
 
   } catch (error) {
-    console.error("An error occurred in getPosts fetch:", error);
+    console.error("An error occurred during build-time fetch:", error);
     return [];
   }
 }
-
 
 export default async function Home() {
   const posts = await getPosts();
