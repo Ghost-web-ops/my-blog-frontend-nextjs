@@ -4,24 +4,24 @@ import { Post } from "../interfaces";
 import Image from "next/image";
 import Link from "next/link";
 
-interface PostCardProps {
-  post: Post;
+// المكون الآن يستقبل attributes مباشرة
+type PostCardProps = {
+  attributes: Post['attributes']; 
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post }) => {
+const PostCard: React.FC<PostCardProps> = ({ attributes }) => {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
   
-  const postAttributes = post.attributes;
-  const coverImageUrl = postAttributes.coverImage?.data?.attributes?.url;
+  const coverImageUrl = attributes.coverImage?.data?.attributes?.url;
 
   return (
-    <Link href={`/posts/${postAttributes.slug}`} className="block">
+    <Link href={`/posts/${attributes.slug}`} className="block">
       <div className="border rounded-lg shadow overflow-hidden hover:-translate-y-1 transition-transform duration-300">
         {coverImageUrl ? (
           <div className="relative w-full h-48">
             <Image
               src={`${strapiUrl}${coverImageUrl}`}
-              alt={String(postAttributes.title)}
+              alt={String(attributes.title)}
               fill
               className="object-cover"
             />
@@ -32,8 +32,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </div>
         )}
         <div className="p-4">
-          <h2 className="text-xl font-bold mb-2 truncate">{postAttributes.title}</h2>
-          <p className="text-gray-600 text-sm">{postAttributes.summary}</p>
+          <h2 className="text-xl font-bold mb-2 truncate">{attributes.title}</h2>
+          <p className="text-gray-600 text-sm">{attributes.summary}</p>
         </div>
       </div>
     </Link>

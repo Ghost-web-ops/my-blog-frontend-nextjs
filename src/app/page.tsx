@@ -4,38 +4,32 @@ import PostCard from "./components/PostCard";
 import { Post } from "./interfaces";
 import Link from "next/link";
 
-// src/app/page.tsx
-
 async function getPosts(): Promise<Post[]> {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
-  
-  // سنطبع الرابط للتأكد منه في السجلات
-  console.log("1. Attempting to fetch from URL:", strapiUrl);
+  if (!strapiUrl) return [];
 
-  const res = await fetch(`${strapiUrl}/api/posts?populate=*`);
+  try {
+    const res = await fetch(`${strapiUrl}/api/posts?populate=*`, { next: { revalidate: 10 } });
+    if (!res.ok) return [];
 
-  // إذا فشل الاتصال، سنوقف عملية النشر ونعرض الخطأ
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`CRITICAL ERROR: Failed to fetch. Status: ${res.status}. Response: ${errorText}`);
+    const responseJson = await res.json();
+    if (responseJson && Array.isArray(responseJson.data)) {
+      return responseJson.data;
+    }
+    return [];
+  } catch (error) {
+    //  ✅ تم تعديل هذا الجزء للتعامل مع الخطأ بشكل آمن
+    if (error instanceof Error) {
+      console.error("An error occurred in getPosts fetch:", error.message);
+    } else {
+      console.error("An unknown error occurred in getPosts fetch:", error);
+    }
+    return [];
   }
-
-  const responseJson = await res.json();
-  console.log("2. Received JSON response.");
-
-  // إذا كانت البيانات ليست بالشكل المتوقع، سنوقف عملية النشر ونعرض الخطأ
-  if (!responseJson || !Array.isArray(responseJson.data)) {
-    throw new Error(`CRITICAL ERROR: Data structure is not an array. Received: ${JSON.stringify(responseJson)}`);
-  }
-  
-  console.log(`3. Success! Fetched ${responseJson.data.length} posts.`);
-  return responseJson.data;
 }
-// src/app/page.tsx
 
 export default async function Home() {
-  // سنزيل التحقق من هنا لنعتمد على الكود الجديد
-  const posts = await getPosts();
+  const posts: Post[] = await getPosts();
 
   return (
     <main className="relative min-h-screen container mx-auto px-4 py-8 md:py-12">
@@ -46,10 +40,15 @@ export default async function Home() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-24">
-        {/* لا نحتاج للتحقق هنا لأن الخطأ سيوقف النشر قبل الوصول لهذه النقطة */}
-        {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-        ))}
+        {posts.length > 0 ? (
+          posts.map(({ id, attributes }) => ( //  <- تفكيك مباشر للـ attributes
+            <PostCard key={id} attributes={attributes} />
+          ))
+        ) : (
+          <p className="col-span-full text-center text-gray-500 text-xl">
+            No posts available at the moment.
+          </p>
+        )}
       </div>
 
       <div className="fixed bottom-6 right-6">
