@@ -5,12 +5,6 @@ import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { Post } from '../../interfaces';
 
-type Props = {
-  params: {
-    slug: string;
-  };
-};
-
 type RichTextBlock = {
   children?: { text?: string }[];
 };
@@ -32,9 +26,11 @@ async function getPost(slug: string) {
   return responseJson.data[0] as Post;
 }
 
-export default async function PostPage({ params }: Props) {
-  const post = await getPost(params.slug);
-  const coverImageUrl = post.attributes.coverImage?.data?.attributes?.url;
+export default async function PostPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
+  const post = await getPost(slug);
+  const attributes = post.attributes;
+  const coverImageUrl = attributes.coverImage?.data?.attributes?.url;
 
   return (
     <article className="container mx-auto px-4 py-8 md:py-12">
@@ -42,20 +38,20 @@ export default async function PostPage({ params }: Props) {
         <div className="relative w-full h-64 md:h-96 mb-8">
           <Image
             src={`${process.env.NEXT_PUBLIC_STRAPI_API_URL}${coverImageUrl}`}
-            alt={post.attributes.title}
+            alt={attributes.title}
             fill
             className="object-cover rounded-lg"
           />
         </div>
       )}
       <h1 className="text-3xl md:text-5xl font-extrabold text-center mb-4">
-        {post.attributes.title}
+        {attributes.title}
       </h1>
       <p className="text-center text-gray-500 mb-12">
-        Published on: {new Date(post.attributes.createdAt).toLocaleDateString('en-US')}
+        Published on: {new Date(attributes.createdAt).toLocaleDateString('en-US')}
       </p>
       <div className="prose lg:prose-xl max-w-none">
-        <ReactMarkdown>{extractTextFromContent(post.attributes.content)}</ReactMarkdown>
+        <ReactMarkdown>{extractTextFromContent(attributes.content)}</ReactMarkdown>
       </div>
     </article>
   );
