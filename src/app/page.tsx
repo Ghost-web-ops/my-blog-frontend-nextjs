@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 async function getPosts() {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
-  const res = await fetch(`${strapiUrl}/api/posts?populate=*`);
+  const res = await fetch(`${strapiUrl}/api/posts?populate=*`, { cache: 'no-store' });
   if (!res.ok) throw new Error("Failed to fetch posts") || notFound();
   const responseJson = await res.json();
   return responseJson.data as Post[];
