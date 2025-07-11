@@ -4,40 +4,37 @@ import PostCard from "./components/PostCard";
 import { Post } from "./interfaces";
 import Link from "next/link";
 
+// src/app/page.tsx
+
 async function getPosts(): Promise<Post[]> {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
+  
+  // سنطبع الرابط للتأكد منه في السجلات
+  console.log("1. Attempting to fetch from URL:", strapiUrl);
 
-  if (!strapiUrl) {
-    console.error("STRAPI_API_URL is not defined.");
-    return [];
+  const res = await fetch(`${strapiUrl}/api/posts?populate=*`);
+
+  // إذا فشل الاتصال، سنوقف عملية النشر ونعرض الخطأ
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`CRITICAL ERROR: Failed to fetch. Status: ${res.status}. Response: ${errorText}`);
   }
 
-  try {
-    //  👇 هذا هو التعديل الحاسم 👇
-    const res = await fetch(`${strapiUrl}/api/posts?populate=*`, { 
-      next: { revalidate: 10 } 
-    });
+  const responseJson = await res.json();
+  console.log("2. Received JSON response.");
 
-    if (!res.ok) {
-      console.error("Build-time fetch failed, status:", res.status);
-      return [];
-    }
-
-    const responseJson = await res.json();
-    
-    if (responseJson && Array.isArray(responseJson.data)) {
-      return responseJson.data;
-    }
-
-    return [];
-
-  } catch (error) {
-    console.error("An error occurred during build-time fetch:", error);
-    return [];
+  // إذا كانت البيانات ليست بالشكل المتوقع، سنوقف عملية النشر ونعرض الخطأ
+  if (!responseJson || !Array.isArray(responseJson.data)) {
+    throw new Error(`CRITICAL ERROR: Data structure is not an array. Received: ${JSON.stringify(responseJson)}`);
   }
+  
+  console.log(`3. Success! Fetched ${responseJson.data.length} posts.`);
+  return responseJson.data;
 }
+// src/app/page.tsx
 
 export default async function Home() {
+  // سنزيل التحقق من هنا لنعتمد على الكود الجديد
   const posts = await getPosts();
 
   return (
@@ -49,18 +46,10 @@ export default async function Home() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-24">
-        {/* ٤. تحقق آمن جدًا قبل العرض */}
-        {Array.isArray(posts) && posts.length > 0 ? (
-          posts
-            .filter(post => post && post.attributes) // فلترة إضافية
-            .map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))
-        ) : (
-          <p className="col-span-full text-center text-gray-500 text-xl">
-            No posts available at the moment.
-          </p>
-        )}
+        {/* لا نحتاج للتحقق هنا لأن الخطأ سيوقف النشر قبل الوصول لهذه النقطة */}
+        {posts.map((post) => (
+            <PostCard key={post.id} post={post} />
+        ))}
       </div>
 
       <div className="fixed bottom-6 right-6">
