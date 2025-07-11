@@ -1,23 +1,29 @@
-import Image from "next/image";
+// src/app/components/PostCard.tsx
+
 import { Post } from "../interfaces";
+import Image from "next/image";
 import Link from "next/link";
 
 interface PostCardProps {
-  post: Post;
+  post: Post; // post is { id: number, attributes: { ... } }
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
-  const coverImageUrl = post.attributes.coverImage?.data?.attributes?.url;
+  
+  // ✅ Corrected paths
+  const postAttributes = post.attributes;
+  const coverImageUrl = postAttributes.coverImage?.data?.attributes?.url;
 
   return (
-    <Link href={`/posts/${post.attributes.slug}`} className="block">
+    // ✅ Corrected path for slug
+    <Link href={`/posts/${postAttributes.slug}`} className="block">
       <div className="border rounded-lg shadow overflow-hidden hover:-translate-y-1 transition-transform duration-300">
         {coverImageUrl ? (
           <div className="relative w-full h-48">
             <Image
               src={`${strapiUrl}${coverImageUrl}`}
-              alt={String(post.attributes.title)}
+              alt={String(postAttributes.title)} // ✅ Corrected
               fill
               className="object-cover"
             />
@@ -28,8 +34,9 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </div>
         )}
         <div className="p-4">
-          <h2 className="text-xl font-bold mb-2 truncate">{post.attributes.title}</h2>
-          <p className="text-gray-600 text-sm">{post.attributes.summary}</p>
+          {/* ✅ Corrected paths for title and summary */}
+          <h2 className="text-xl font-bold mb-2 truncate">{postAttributes.title}</h2>
+          <p className="text-gray-600 text-sm">{postAttributes.summary}</p>
         </div>
       </div>
     </Link>

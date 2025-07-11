@@ -29,9 +29,17 @@ async function getPost(slug: string) {
 }
 
 // ✅ لاحظ: لا تكتب Props كـ Type خارجي. Next.js يولّد الأنواع تلقائيًا
-export default async function Page({ params }: { params: { slug: string } }) {
-  const post = await getPost(params.slug);
-  const coverImageUrl = post.attributes.coverImage?.data?.attributes?.url;
+// src/app/posts/[slug]/page.tsx
+
+// ... (imports and other functions remain the same) ...
+
+export default async function PostPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
+  const post = await getPost(slug); // post is { id: number, attributes: { ... } }
+
+  // ✅ Corrected paths
+  const postAttributes = post.attributes;
+  const coverImageUrl = postAttributes.coverImage?.data?.attributes?.url;
 
   return (
     <article className="container mx-auto px-4 py-8 md:py-12">
@@ -39,20 +47,20 @@ export default async function Page({ params }: { params: { slug: string } }) {
         <div className="relative w-full h-64 md:h-96 mb-8">
           <Image
             src={`${process.env.NEXT_PUBLIC_STRAPI_API_URL}${coverImageUrl}`}
-            alt={post.attributes.title}
+            alt={postAttributes.title} // ✅ Corrected
             fill
             className="object-cover rounded-lg"
           />
         </div>
       )}
       <h1 className="text-3xl md:text-5xl font-extrabold text-center mb-4">
-        {post.attributes.title}
+        {postAttributes.title} {/* ✅ Corrected */}
       </h1>
       <p className="text-center text-gray-500 mb-12">
-        Published on: {new Date(post.attributes.createdAt).toLocaleDateString("en-US")}
+        Published on: {new Date(postAttributes.createdAt).toLocaleDateString('en-US')} {/* ✅ Corrected */}
       </p>
       <div className="prose lg:prose-xl max-w-none">
-        <ReactMarkdown>{extractTextFromContent(post.attributes.content)}</ReactMarkdown>
+        <ReactMarkdown>{extractTextFromContent(postAttributes.content)}</ReactMarkdown> {/* ✅ Corrected */}
       </div>
     </article>
   );
