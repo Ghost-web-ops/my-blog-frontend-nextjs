@@ -3,3 +3,15 @@
 @tailwind utilities;
 
 /* Make sure this file is processed by Tailwind CSS using PostCSS */
+/*
+  هذا الكود يجعل الصور داخل المقالات متجاوبة
+*/
+.prose img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 0.75rem; /* لجعل حواف الصورة دائرية بشكل جميل */
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* لإضافة ظل خفيف */
+}
