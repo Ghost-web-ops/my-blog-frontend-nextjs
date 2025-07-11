@@ -1,60 +1,107 @@
-// src/app/page.tsx
+// src/app/posts/[slug]/page.tsx
 
-import PostCard from "../../components/PostCard";
-import { Post } from "../../interfaces";
-import Link from "next/link";
+import { Post } from '../../interfaces';
+import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
 
-async function getPosts(): Promise<Post[]> {
+// واجهة للمحتوى النصي (يجب أن تكون متطابقة مع الموجودة في interfaces.ts)
+interface RichTextChild {
+  type: 'text';
+  text: string;
+  bold?: boolean;
+}
+interface RichTextBlock {
+  type: 'paragraph';
+  children: RichTextChild[];
+}
+
+// دالة لاستخلاص النص من المحتوى
+function extractTextFromContent(content: RichTextBlock[]): string {
+  if (!Array.isArray(content)) return "";
+  return content
+    .map((block) =>
+      block.children?.map((child) => child.text || "").join("") ?? ""
+    )
+    .join("\n\n");
+}
+
+// دالة لجلب مقال واحد بناءً على الـ slug
+async function getPost(slug: string): Promise<Post | null> {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
-  if (!strapiUrl) return [];
+  if (!strapiUrl) return null;
 
   try {
-    const res = await fetch(`${strapiUrl}/api/posts?populate=*`, { next: { revalidate: 10 } });
-    if (!res.ok) return [];
-    
+    // نستخدم الفلاتر لجلب المقال المطلوب
+    const res = await fetch(`${strapiUrl}/api/posts?filters[slug][$eq]=${slug}&populate=*`, {
+      next: { revalidate: 60 }
+    });
+
+    if (!res.ok) return null;
+
     const responseJson = await res.json();
-    return (responseJson && Array.isArray(responseJson.data)) ? responseJson.data : [];
+    
+    // إذا وجدنا بيانات، نرجع المقال الأول
+    if (responseJson && Array.isArray(responseJson.data) && responseJson.data.length > 0) {
+      return responseJson.data[0];
+    }
+
+    return null;
 
   } catch (error) {
-    if (error instanceof Error) console.error("Fetch Error:", error.message);
-    return [];
+    //  ✅ تم تعديل هذا الجزء للتعامل مع الخطأ بشكل آمن
+    if (error instanceof Error) {
+      console.error("An error occurred in getPosts fetch:", error.message);
+    } else {
+      console.error("An unknown error occurred in getPosts fetch:", error);
+    }
+    return null;
   }
 }
 
-export default async function Home() {
-  const posts: Post[] = await getPosts();
+// تعريف خصائص الصفحة
+type PageProps = {
+  params: {
+    slug: string;
+  };
+};
+
+// مكون الصفحة
+export default async function PostPage({ params }: PageProps) {
+  const { slug } = params;
+  const post = await getPost(slug);
+
+  // إذا لم يتم العثور على المقال، نعرض صفحة 404
+  if (!post) {
+    notFound();
+  }
+
+  const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
+  const coverImageUrl = post.coverImge && post.coverImge.length > 0
+    ? post.coverImge[0].url
+    : null;
 
   return (
-    <main className="relative min-h-screen container mx-auto px-4 py-8 md:py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-6xl font-extrabold">Posts</h1>
+    <article className="container mx-auto px-4 py-8 md:py-12">
+      {coverImageUrl && (
+        <div className="relative w-full h-64 md:h-96 mb-8">
+          <Image
+            src={`${strapiUrl}${coverImageUrl}`}
+            alt={post.title}
+            fill
+            className="object-cover rounded-lg"
+          />
+        </div>
+      )}
+      <h1 className="text-3xl md:text-5xl font-extrabold text-center mb-4">
+        {post.title}
+      </h1>
+      <p className="text-center text-gray-500 mb-12">
+        Published on: {new Date(post.publishedAt).toLocaleDateString('en-US')}
+      </p>
+      <div className="prose lg:prose-xl max-w-none mx-auto">
+        <ReactMarkdown>{extractTextFromContent(post.content)}</ReactMarkdown>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-24">
-        {posts.length > 0 ? (
-          posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))
-        ) : (
-          <p className="col-span-full text-center text-gray-500 text-xl">
-            No posts available at the moment.
-          </p>
-        )}
-      </div>
-
-      <div className="fixed bottom-6 right-6">
-        <Link 
-          href="https://my-blog-backend-production-b97d.up.railway.app/admin/content-manager/collection-types/api::post.post/create" 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="bg-blue-600 text-white font-bold p-4 rounded-full hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center"
-          aria-label="Add new post"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </Link>
-      </div>
-    </main>
+    </article>
   );
 }
