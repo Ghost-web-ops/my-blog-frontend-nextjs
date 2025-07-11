@@ -16,7 +16,7 @@ async function getPosts() {
     }
 
     const responseJson = await res.json();
-    
+
     // --- خطوة تشخيص هامة ---
     // هذا السطر سيطبع شكل البيانات في سجلات Vercel لنراها
     console.log("Strapi Response JSON:", JSON.stringify(responseJson, null, 2));
@@ -41,33 +41,35 @@ export default async function Home() {
   const posts = await getPosts();
 
   return (
-    // ١. أضف relative و min-h-screen هنا
+    // ١. احتفظ بـ relative و min-h-screen
     <main className="relative min-h-screen container mx-auto px-4 py-8 md:py-12">
-      <div className="flex justify-between items-center mb-12">
+      {/* --- ٢. تعديل العنوان ليصبح في المنتصف --- */}
+      <div className="text-center mb-8">
         <h1 className="text-4xl md:text-6xl font-extrabold">
-          Blog
+          Posts
         </h1>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-24"> {/* ٢. أضف padding-bottom */}
+
+      {/* --- عرض المقالات --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-16"> {/* ٣. تقليل padding-bottom */}
         {posts && posts.length > 0 ? (
           posts.filter(post => post && post.attributes).map((post) => (
             <PostCard key={post.id} post={post} />
           ))
         ) : (
           <p className="col-span-full text-center text-gray-500">
-            There are no posts available at the moment.
+            No posts available.
           </p>
         )}
       </div>
 
-      {/* --- ٣. إضافة قسم الزرار الثابت هنا --- */}
-      <div className="sticky bottom-0 left-0 right-0 w-full flex justify-center py-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-        <Link 
-          href="https://my-blog-backend-production-b97d.up.railway.app/admin/content-manager/collection-types/api::post.post/create" 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
+      {/* --- ٤. تعديل قسم الزرار ليصبح في الأسفل على اليسار --- */}
+      <div className="absolute bottom-10 left-4">
+        <Link
+          href="https://my-blog-backend-production-b97d.up.railway.app/admin/content-manager/collection-types/api::post.post/create"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors shadow-lg no-underline"
         >
           create new post
         </Link>
