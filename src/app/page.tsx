@@ -8,31 +8,26 @@ async function getPosts() {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
 
   try {
-    const res = await fetch(`${strapiUrl}/api/posts?populate=*`, { cache: 'no-store' });
+    // تم حذف { cache: 'no-store' } للسماح بالبناء الثابت
+    const res = await fetch(`${strapiUrl}/api/posts?populate=*`);
 
     if (!res.ok) {
-      console.error("Failed to fetch posts, status:", res.status);
-      throw new Error("Failed to fetch posts");
+      console.error("Build-time fetch failed, status:", res.status);
+      return []; // نرجع مصفوفة فارغة لتجنب فشل البناء
     }
 
     const responseJson = await res.json();
-
-    // --- خطوة تشخيص هامة ---
-    // هذا السطر سيطبع شكل البيانات في سجلات Vercel لنراها
-    console.log("Strapi Response JSON:", JSON.stringify(responseJson, null, 2));
-
+    
     // نتأكد أن البيانات موجودة وأنها عبارة عن مصفوفة
     if (responseJson && Array.isArray(responseJson.data)) {
       return responseJson.data as Post[];
     }
 
-    // إذا لم تكن البيانات بالشكل المتوقع، نرجع مصفوفة فارغة
-    return [];
+    return []; // إذا لم تكن البيانات بالشكل المتوقع
 
   } catch (error) {
-    console.error("An error occurred in getPosts:", error);
-    // في حالة حدوث أي خطأ، نرجع مصفوفة فارغة لتجنب توقف الموقع
-    return [];
+    console.error("An error occurred during build-time fetch:", error);
+    return []; // نرجع مصفوفة فارغة لتجنب فشل البناء
   }
 }
 
