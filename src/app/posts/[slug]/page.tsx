@@ -1,7 +1,15 @@
-import { Post } from '../../interfaces';
+export const dynamic = "force-dynamic";
+
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
+import { Post } from '../../interfaces';
+
+type Props = {
+  params: {
+    slug: string;
+  };
+};
 
 type RichTextBlock = {
   children?: { text?: string }[];
@@ -24,12 +32,9 @@ async function getPost(slug: string) {
   return responseJson.data[0] as Post;
 }
 
-
-export default async function PostPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
-  const post = await getPost(slug);
+export default async function PostPage({ params }: Props) {
+  const post = await getPost(params.slug);
   const coverImageUrl = post.coverImage?.attributes?.url;
-  console.log("post.content:", post.content, typeof post.content);
 
   return (
     <article className="container mx-auto px-4 py-8 md:py-12">
