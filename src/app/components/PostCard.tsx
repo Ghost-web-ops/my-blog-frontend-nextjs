@@ -4,14 +4,12 @@ import { Post } from "../interfaces";
 import Image from "next/image";
 import Link from "next/link";
 
-// المكون الآن يستقبل attributes مباشرة
 type PostCardProps = {
   attributes: Post['attributes']; 
 }
 
 const PostCard: React.FC<PostCardProps> = ({ attributes }) => {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
-  
   const coverImageUrl = attributes.coverImage?.data?.attributes?.url;
 
   return (

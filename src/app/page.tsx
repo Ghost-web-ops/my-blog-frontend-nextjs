@@ -7,16 +7,11 @@ import Link from "next/link";
 async function getPosts(): Promise<Post[]> {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
   if (!strapiUrl) return [];
-
   try {
-    const res = await fetch(`${strapiUrl}/api/posts?populate=*`, { next: { revalidate: 10 } });
+    const res = await fetch(`${strapiUrl}/api/posts?populate=*`, { next: { revalidate: 0 } });
     if (!res.ok) return [];
-
     const responseJson = await res.json();
-    if (responseJson && Array.isArray(responseJson.data)) {
-      return responseJson.data;
-    }
-    return [];
+    return (responseJson && Array.isArray(responseJson.data)) ? responseJson.data : [];
   } catch (error) {
     //  ✅ تم تعديل هذا الجزء للتعامل مع الخطأ بشكل آمن
     if (error instanceof Error) {
@@ -34,20 +29,22 @@ export default async function Home() {
   return (
     <main className="relative min-h-screen container mx-auto px-4 py-8 md:py-12">
       <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-6xl font-extrabold">
-          Posts
-        </h1>
+        <h1 className="text-4xl md:text-6xl font-extrabold">Posts</h1>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-24">
         {posts.length > 0 ? (
-          posts.map(({ id, attributes }) => ( //  <- تفكيك مباشر للـ attributes
-            <PostCard key={id} attributes={attributes} />
-          ))
+          posts.map((post) => {
+            // -- طباعة تشخيصية حاسمة --
+            console.log(`Rendering Post ID: ${post.id}. Does it have attributes?`, !!post.attributes);
+            if (!post.attributes) {
+              console.log('Post object without attributes:', post);
+              return null; // لا تعرض أي شيء إذا كانت الـ attributes غير موجودة
+            }
+            return <PostCard key={post.id} attributes={post.attributes} />;
+          })
         ) : (
-          <p className="col-span-full text-center text-gray-500 text-xl">
-            No posts available at the moment.
-          </p>
+          <p className="col-span-full text-center text-gray-500 text-xl">No posts available.</p>
         )}
       </div>
 
