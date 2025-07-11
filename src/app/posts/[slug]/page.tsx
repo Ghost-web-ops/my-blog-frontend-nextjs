@@ -84,7 +84,7 @@ export default async function PostPage({ params }: PageProps) {
   return (
     <article className="container mx-auto px-4 py-8 md:py-12">
    {coverImageUrl && (
- <div className="relative w-full h-7 aspect-video mb-8">
+ <div className="relative w-full aspect-video mb-8">
    <Image
      src={`${strapiUrl}${coverImageUrl}`}
      alt={post.title}
