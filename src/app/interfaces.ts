@@ -1,19 +1,19 @@
 // src/interfaces.ts
 
 // واجهات دقيقة للمحتوى النصي
-interface RichTextChild {
+export interface RichTextChild {
   type: 'text';
   text: string;
   bold?: boolean;
 }
 
-interface RichTextBlock {
+export interface RichTextBlock {
   type: 'paragraph';
   children: RichTextChild[];
 }
 
 // واجهات دقيقة للصور وصيغها المختلفة
-interface ImageFormat {
+export interface ImageFormat {
   ext: string;
   url: string;
   hash: string;
@@ -25,14 +25,14 @@ interface ImageFormat {
   height: number;
 }
 
-interface ImageFormats {
-  large: ImageFormat;
-  small: ImageFormat;
-  medium: ImageFormat;
-  thumbnail: ImageFormat;
+export interface ImageFormats {
+  large?: ImageFormat;
+  small?: ImageFormat;
+  medium?: ImageFormat;
+  thumbnail?: ImageFormat;
 }
 
-interface StrapiImage {
+export interface StrapiImage {
   id: number;
   name: string;
   alternativeText: string | null;
@@ -62,5 +62,5 @@ export interface Post {
   createdAt: string;
   updatedAt: string;
   publishedAt: string;
-  coverImge: StrapiImage[]; // لاحظ الخطأ الإملائي هنا كما هو في الـ API
+  coverImge: StrapiImage[];
 }

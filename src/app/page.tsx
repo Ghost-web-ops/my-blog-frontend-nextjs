@@ -7,18 +7,16 @@ import Link from "next/link";
 async function getPosts(): Promise<Post[]> {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
   if (!strapiUrl) return [];
+
   try {
     const res = await fetch(`${strapiUrl}/api/posts?populate=*`, { next: { revalidate: 10 } });
     if (!res.ok) return [];
+    
     const responseJson = await res.json();
     return (responseJson && Array.isArray(responseJson.data)) ? responseJson.data : [];
-  }catch (error) {
-    //  ✅ تم تعديل هذا الجزء للتعامل مع الخطأ بشكل آمن
-    if (error instanceof Error) {
-      console.error("An error occurred in getPosts fetch:", error.message);
-    } else {
-      console.error("An unknown error occurred in getPosts fetch:", error);
-    }
+
+  } catch (error) {
+    if (error instanceof Error) console.error("Fetch Error:", error.message);
     return [];
   }
 }
@@ -34,11 +32,13 @@ export default async function Home() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-24">
         {posts.length > 0 ? (
-          posts.map((post) => ( //  <- لا يوجد attributes هنا
+          posts.map((post) => (
             <PostCard key={post.id} post={post} />
           ))
         ) : (
-          <p className="col-span-full text-center text-gray-500 text-xl">No posts available.</p>
+          <p className="col-span-full text-center text-gray-500 text-xl">
+            No posts available at the moment.
+          </p>
         )}
       </div>
 

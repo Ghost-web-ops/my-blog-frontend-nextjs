@@ -4,14 +4,14 @@ import { Post } from "../interfaces";
 import Image from "next/image";
 import Link from "next/link";
 
-type PostCardProps = {
+interface PostCardProps {
   post: Post; 
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
   
-  // ✅ قراءة رابط الصورة من الهيكل الجديد
+  // قراءة رابط الصورة من الهيكل الصحيح مع التعامل مع الخطأ الإملائي
   const coverImageUrl = post.coverImge && post.coverImge.length > 0 
     ? post.coverImge[0].url 
     : null;
