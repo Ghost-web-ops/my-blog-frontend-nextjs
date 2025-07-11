@@ -8,11 +8,11 @@ async function getPosts(): Promise<Post[]> {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
   if (!strapiUrl) return [];
   try {
-    const res = await fetch(`${strapiUrl}/api/posts?populate=*`, { next: { revalidate: 0 } });
+    const res = await fetch(`${strapiUrl}/api/posts?populate=*`, { next: { revalidate: 10 } });
     if (!res.ok) return [];
     const responseJson = await res.json();
     return (responseJson && Array.isArray(responseJson.data)) ? responseJson.data : [];
-  } catch (error) {
+  }catch (error) {
     //  ✅ تم تعديل هذا الجزء للتعامل مع الخطأ بشكل آمن
     if (error instanceof Error) {
       console.error("An error occurred in getPosts fetch:", error.message);
@@ -34,15 +34,9 @@ export default async function Home() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-24">
         {posts.length > 0 ? (
-          posts.map((post) => {
-            // -- طباعة تشخيصية حاسمة --
-            console.log(`Rendering Post ID: ${post.id}. Does it have attributes?`, !!post.attributes);
-            if (!post.attributes) {
-              console.log('Post object without attributes:', post);
-              return null; // لا تعرض أي شيء إذا كانت الـ attributes غير موجودة
-            }
-            return <PostCard key={post.id} attributes={post.attributes} />;
-          })
+          posts.map((post) => ( //  <- لا يوجد attributes هنا
+            <PostCard key={post.id} post={post} />
+          ))
         ) : (
           <p className="col-span-full text-center text-gray-500 text-xl">No posts available.</p>
         )}
