@@ -34,7 +34,7 @@ async function getPost(slug: string) {
 
 export default async function PostPage({ params }: Props) {
   const post = await getPost(params.slug);
-  const coverImageUrl = post.coverImage?.attributes?.url;
+  const coverImageUrl = post.attributes.coverImage?.data?.attributes?.url;
 
   return (
     <article className="container mx-auto px-4 py-8 md:py-12">
@@ -42,20 +42,20 @@ export default async function PostPage({ params }: Props) {
         <div className="relative w-full h-64 md:h-96 mb-8">
           <Image
             src={`${process.env.NEXT_PUBLIC_STRAPI_API_URL}${coverImageUrl}`}
-            alt={post.title}
+            alt={post.attributes.title}
             fill
             className="object-cover rounded-lg"
           />
         </div>
       )}
       <h1 className="text-3xl md:text-5xl font-extrabold text-center mb-4">
-        {post.title}
+        {post.attributes.title}
       </h1>
       <p className="text-center text-gray-500 mb-12">
-        Published on: {new Date(post.createdAt).toLocaleDateString('en-US')}
+        Published on: {new Date(post.attributes.createdAt).toLocaleDateString('en-US')}
       </p>
       <div className="prose lg:prose-xl max-w-none">
-        <ReactMarkdown>{extractTextFromContent(post.content)}</ReactMarkdown>
+        <ReactMarkdown>{extractTextFromContent(post.attributes.content)}</ReactMarkdown>
       </div>
     </article>
   );

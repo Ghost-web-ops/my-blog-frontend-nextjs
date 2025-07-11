@@ -8,16 +8,16 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
-  const coverImageUrl = post.coverImage?.data?.attributes?.url;
+  const coverImageUrl = post.attributes.coverImage?.data?.attributes?.url;
 
   return (
-    <Link href={`/posts/${post.slug}`} className="block">
+    <Link href={`/posts/${post.attributes.slug}`} className="block">
       <div className="border rounded-lg shadow overflow-hidden hover:-translate-y-1 transition-transform duration-300">
         {coverImageUrl ? (
           <div className="relative w-full h-48">
             <Image
               src={`${strapiUrl}${coverImageUrl}`}
-              alt={String(post.title)}
+              alt={String(post.attributes.title)}
               fill
               className="object-cover"
             />
@@ -28,8 +28,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </div>
         )}
         <div className="p-4">
-          <h2 className="text-xl font-bold mb-2 truncate">{post.title}</h2>
-          <p className="text-gray-600 text-sm">{post.summary}</p>
+          <h2 className="text-xl font-bold mb-2 truncate">{post.attributes.title}</h2>
+          <p className="text-gray-600 text-sm">{post.attributes.summary}</p>
         </div>
       </div>
     </Link>
