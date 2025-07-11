@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
-import { Post } from "../../interfaces";
+import { Post } from "../../interfaces"; // لو عندك interface في src/interfaces.ts
 
 type RichTextBlock = {
   children?: { text?: string }[];
@@ -28,14 +28,9 @@ async function getPost(slug: string) {
   return responseJson.data[0] as Post;
 }
 
-// ✅ الشكل الصحيح لتلقي المعاملات من App Router:
-export default async function PostPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const { slug } = params;
-  const post = await getPost(slug);
+// ✅ لاحظ: لا تكتب Props كـ Type خارجي. Next.js يولّد الأنواع تلقائيًا
+export default async function Page({ params }: { params: { slug: string } }) {
+  const post = await getPost(params.slug);
   const coverImageUrl = post.attributes.coverImage?.data?.attributes?.url;
 
   return (
