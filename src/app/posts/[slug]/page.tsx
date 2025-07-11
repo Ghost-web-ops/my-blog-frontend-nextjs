@@ -24,14 +24,14 @@ async function getPost(slug: string) {
   return responseJson.data[0] as Post;
 }
 
-type Props = {
+type PageProps = {
   params: {
     slug: string;
   };
 };
 
-export default async function PostPage(props: Props) {
-  const { slug } = props.params;
+export default async function PostPage({ params }: PageProps) {
+  const { slug } = params;
   const post = await getPost(slug);
   const coverImageUrl = post.coverImage?.attributes?.url;
   console.log("post.content:", post.content, typeof post.content);
